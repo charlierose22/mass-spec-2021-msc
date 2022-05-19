@@ -1,0 +1,31 @@
+# set working directory
+setwd("C:/Compound Discoverer/Projects/Naburn_WholeSystem")
+
+# load (and/or install) packages
+library(tidyverse)
+library(readr)
+
+# import peak area df
+NaburnPeakAreas <- read_csv("Raw Data/NaburnPeakAreas.csv")
+
+# import cv df
+NaburnCVs <- read_csv("Raw Data/NaburnCVs.csv")
+
+# pivot both longer 
+PeakAreaLong <- pivot_longer(NaburnPeakAreas,
+                       !Name,
+                       names_to = "TreatmentStage", 
+                       values_to = "PeakAreas")
+CVLong <- pivot_longer(NaburnCVs,
+                             !Name,
+                             names_to = "TreatmentStage", 
+                             values_to = "CV")
+
+# heatmap
+ggplot(PeakAreaLong, aes(y = Name, x = TreatmentStage, fill = PeakAreas)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 6e+07) +
+  labs(x = "Wastewater Treatment Stage", y = "Compound Name", colour = "Group Area") +
+  theme(axis.text.x = element_text(45)) +
+  theme_bw(base_size = 16)
+ggsave("Figures/Heatmap.png", width = 6, height = 4)
