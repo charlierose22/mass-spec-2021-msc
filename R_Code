@@ -4,22 +4,19 @@ setwd("C:/Compound Discoverer/Projects/Naburn_WholeSystem")
 # load (and/or install) packages
 library(tidyverse)
 library(readr)
+library(dplyr)
+library(ggforce)
 
 # import peak area df
-NaburnPeakAreas <- read_csv("Raw Data/NaburnPeakAreas.csv")
+MeanPeakAreasCD2 <- read_csv("Raw Data/MeanPeakAreasCD2.csv")
+View(MeanPeakAreasCD2)
 
-# import cv df
-NaburnCVs <- read_csv("Raw Data/NaburnCVs.csv")
 
-# pivot both longer 
-PeakAreaLong <- pivot_longer(NaburnPeakAreas,
+# pivot longer 
+PeakAreaLong <- pivot_longer(MeanPeakAreasCD2,
                        !Name,
                        names_to = "TreatmentStage", 
                        values_to = "PeakAreas")
-CVLong <- pivot_longer(NaburnCVs,
-                             !Name,
-                             names_to = "TreatmentStage", 
-                             values_to = "CV")
 
 # heatmap
 ggplot(PeakAreaLong, aes(y = Name, x = TreatmentStage, fill = PeakAreas)) +
@@ -29,3 +26,49 @@ ggplot(PeakAreaLong, aes(y = Name, x = TreatmentStage, fill = PeakAreas)) +
   theme(axis.text.x = element_text(45)) +
   theme_bw(base_size = 16)
 ggsave("Figures/Heatmap.png", width = 6, height = 4)
+
+# import standard deviations
+StandardDevs2 <- read_csv("Raw Data/StandardDevs2.csv")
+View(StandardDevs2)
+
+# pivot to match peak area
+SDLong <- pivot_longer(StandardDevs2,
+                             !Name,
+                             names_to = "TreatmentStage", 
+                             values_to = "SD")
+
+# drop first two columns in SDLong
+SDLong = subset(SDLong, 
+                select = -c(Name, TreatmentStage))
+
+# add sd to main peak area table
+Joined <- left_join(PeakAreaLong, SDLong, 
+                    by = c("Name" = "Name", 
+                           "TreatmentStage" = "TreatmentStage"))
+
+# plot mean peak areas and standard devs
+Joined_Melted <- reshape2::melt(Joined, id.vars = 'Name')
+
+p <- ggplot(data = Joined) +
+  aes(x = TreatmentStage,
+      y = PeakAreas) +
+  geom_point() +
+  geom_errorbar(aes(x = TreatmentStage,
+                    ymin = PeakAreas,
+                    ymax = PeakAreas),
+                width = .3) +
+  geom_errorbar(aes(x = TreatmentStage,
+                    ymin = PeakAreas - SD,
+                    ymax = PeakAreas + SD),
+                width = .5) +
+  labs(x = "Wastewater Treatment Stage",
+       y = "Mean LC Peak Area") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme_bw(base_size = 24)
+
+i = 25
+for (i in 1:25) {
+  p_save <-  p + 
+    facet_wrap_paginate(~ Name, ncol = 1, nrow = 1, page = i, scales = "free")
+  ggsave(plot = p_save, filename = paste0('Figures/page_', i, '.jpg'))
+}
