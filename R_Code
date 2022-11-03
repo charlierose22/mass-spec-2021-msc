@@ -1,5 +1,5 @@
 # set working directory
-setwd("C:/Compound Discoverer/Projects/Naburn_WholeSystem")
+setwd("~/GitHub/mass-spec-2021")
 
 # load (and/or install) packages
 library(tidyverse)
@@ -8,12 +8,10 @@ library(dplyr)
 library(ggforce)
 
 # import peak area df
-MeanPeakAreasCD2 <- read_csv("Raw Data/MeanPeakAreasCD2.csv")
-View(MeanPeakAreasCD2)
-
+ PeakAreas <- read_excel("Raw Data/NaburnPeakAreas.xlsx")
 
 # pivot longer 
-PeakAreaLong <- pivot_longer(MeanPeakAreasCD2,
+PeakAreaLong <- pivot_longer(PeakAreas,
                        !Name,
                        names_to = "TreatmentStage", 
                        values_to = "PeakAreas")
