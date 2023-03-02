@@ -9,7 +9,7 @@ library(dplyr)
 
 # import peak area df
 NaburnPeakAreas <- read_excel("Raw Data/NaburnPeakAreas.xlsx", 
-                              +     n_max = 25)
+                              + n_max = 25)
 
 # import cv df
 NaburnCVs <- read_excel("Raw Data/NaburnCVs.xlsx")
@@ -22,10 +22,12 @@ PeakAreaLong <- pivot_longer(PeakAreas,
                              !Name,
                              names_to = "TreatmentStage", 
                              values_to = "PeakAreas")
+
 CVLong <- pivot_longer(NaburnCVs,
                        !Name,
                        names_to = "TreatmentStage", 
                        values_to = "CV")
+
 BiosolidLong <- pivot_longer(Biosolid,
                              !Name,
                              names_to = "TreatmentStage",
